@@ -1,8 +1,6 @@
 
-
-
-
 ## scraping gsmarena website ##
+
 
 # proxy settings
 
@@ -18,9 +16,10 @@ library(purrr)
 library(jsonlite)
 library(stringr)
 
-setwd("git/scrape-gsma/")
+# setwd("git/scrape-gsma/")
 
 options(stringsAsFactors = F)
+
 
 if (file.exists("gsm.csv")){
   gsm <- read.csv("gsm.csv")
@@ -51,11 +50,10 @@ build_oem_table <- function(...){
 
 # oem_table <- build_oem_table()
 
+
 parse_resource_locator <- function(location){
   paste0("https://www.gsmarena.com/", location)
 }
-
-
 
 
 oem_urls <- function(oem_base_url){
@@ -79,8 +77,6 @@ oem_urls <- function(oem_base_url){
   } else {
     oem_base_url
   }
-  
-  
 }
 
 # oem_urls("https://www.gsmarena.com/samsung-phones-9.php")
@@ -96,7 +92,6 @@ listed_devices <- function(page_url){
   
   data.frame(device_name = devices, device_resource = devices_url)
 }
-
 
 # listed_devices("https://www.gsmarena.com/samsung-phones-f-9-0-p1.php")
 
@@ -146,7 +141,6 @@ safe_scraper <- safely(scrape_df, otherwise = NULL)
 
 
 ll <- list(devices = list())
-
 
 
 loop_the_loop <- function() {
@@ -214,7 +208,6 @@ loop_the_loop <- function() {
           )
         }
         
-        
       }
     }
   }
@@ -225,14 +218,15 @@ loop_the_loop <- function() {
 loop_the_loop()
 
 
-
 new_data_json <- readLines("gsm.json") %>% fromJSON()
+
 
 long_to_wide <- function(df){
   as.data.frame(t(df$val)) %>% 
     `colnames<-`(paste0(df$type, "_", df$sub_type) %>% 
                    str_trim(side = "both"))
 }
+
 
 gsm_new_devices <- new_data_json$devices %>% purrr::flatten() %>% map(long_to_wide) %>% bind_rows()
 
@@ -244,7 +238,6 @@ colnames(gsm_new_devices) <- colnames(gsm_new_devices) %>% str_replace( "_\\Z", 
 
 colnames(gsm_new_devices) <- colnames(gsm_new_devices) %>% str_replace( "_na", "") %>% 
   str_replace( "\\.\\.\\.[0-9]+", "")
-
 
 
 df <- bind_rows(gsm_new_devices, gsm)
