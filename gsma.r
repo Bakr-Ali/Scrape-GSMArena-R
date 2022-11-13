@@ -28,7 +28,7 @@ if (file.exists("gsm.csv")){
 
 build_oem_table <- function(...){
   
-  sesh <- html_session("https://www.gsmarena.com/makers.php3") 
+  sesh <- session("https://www.gsmarena.com/makers.php3") 
   makers <- read_html(sesh)
   
   maker_nodes <- makers %>% html_nodes(".st-text a") 
