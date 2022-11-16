@@ -18,20 +18,20 @@ library(stringr)
 
 # setwd("git/scrape-gsma/")
 
-options(stringsAsFactors = F)
+options(stringsAsFactors = FALSE)
 
 
-if (file.exists("gsm.csv")){
+if (file.exists("gsm.csv")) {
   gsm <- read.csv("gsm.csv")
 }
 
 
-build_oem_table <- function(...){
+build_oem_table <- function(...) {
   
-  sesh <- session("https://www.gsmarena.com/makers.php3") 
+  sesh <- session("https://www.gsmarena.com/makers.php3")
   makers <- read_html(sesh)
   
-  maker_nodes <- makers %>% html_nodes(".st-text a") 
+  maker_nodes <- makers %>% html_nodes(".st-text a")
   
   maker_names <- maker_nodes %>% html_text()
   
@@ -41,7 +41,7 @@ build_oem_table <- function(...){
   
   maker_devices_count <- gsub(pattern = " devices", replacement = "", x = maker_devices_count) %>% as.numeric()
   
-  maker_url = maker_nodes %>% html_attr('href')
+  maker_url = maker_nodes %>% html_attr("href")
   
   oem_table <- data.frame(maker = oem_names, device_count = maker_devices_count, resource_location = maker_url)
   
@@ -51,17 +51,17 @@ build_oem_table <- function(...){
 # oem_table <- build_oem_table()
 
 
-parse_resource_locator <- function(location){
+parse_resource_locator <- function(location) {
   paste0("https://www.gsmarena.com/", location)
 }
 
 
-oem_urls <- function(oem_base_url){
+oem_urls <- function(oem_base_url) {
   src <- read_html(oem_base_url); Sys.sleep(3)
   
   items <- src %>% html_nodes(".nav-pages strong , .nav-pages a") %>% html_text()
   
-  if (length(items) != 0){
+  if (length(items) != 0) {
     page_range <- 1:(items[length(items)] %>% as.numeric())
     
     maker_id <- stringr::str_match(oem_base_url, "https://www.gsmarena.com/(.*?)-phones-")[2]
@@ -82,13 +82,13 @@ oem_urls <- function(oem_base_url){
 # oem_urls("https://www.gsmarena.com/samsung-phones-9.php")
 
 
-listed_devices <- function(page_url){
+listed_devices <- function(page_url) {
   
   src <- read_html(page_url)
-  nodes <- src %>% html_nodes("#review-body a") 
+  nodes <- src %>% html_nodes("#review-body a")
   
   devices <- nodes %>% html_text()
-  devices_url <- nodes %>% html_attr('href')
+  devices_url <- nodes %>% html_attr("href")
   
   data.frame(device_name = devices, device_resource = devices_url)
 }
@@ -108,19 +108,19 @@ scrape_df <- function(url) {
     
     out = tryCatch(
       {
-        suppressMessages(htmltab(doc, which = head_indx, rm_nodata_cols = F ) %>% 
-                           as.data.frame() %>% 
-                           rbind(colnames(.), .) %>% 
+        suppressMessages(htmltab(doc, which = head_indx, rm_nodata_cols = FALSE) %>%
+                           as.data.frame() %>%
+                           rbind(colnames(.), .) %>%
                            `colnames<-`(c("type", "sub_type", "val")))
       },
       
-      error = function(e){
+      error = function(e) {
         xp <- '//th | //*[contains(concat( " ", @class, " " ), concat( " ", "ttl", " " ))]//*[contains(concat( " ", @class, " " ), concat( " ", "nfo", " " ))]'
         print(paste("Fetching chunk", head_indx, "of", n_head))
         
-        suppressMessages(htmltab(url, which = head_indx, body = xp ) %>% 
-                           as.data.frame() %>% 
-                           rbind(colnames(.), .) %>% 
+        suppressMessages(htmltab(url, which = head_indx, body = xp) %>%
+                           as.data.frame() %>%
+                           rbind(colnames(.), .) %>%
                            `colnames<-`(c("type", "sub_type", "val")))
       }
     )
@@ -133,7 +133,6 @@ scrape_df <- function(url) {
   
   system("rm *.php")
   df
-  
 }
 
 
@@ -145,8 +144,7 @@ ll <- list(devices = list())
 
 loop_the_loop <- function() {
   
-  
-  if (exists("oem_table")){
+  if (exists("oem_table")) {
     
     print("oem table exists")
     
@@ -160,8 +158,7 @@ loop_the_loop <- function() {
     
   }
   
-  
-  for (oem in oem_table$maker[1:nrow(oem_table)] ){
+  for (oem in oem_table$maker[1:nrow(oem_table)]) {
     print(paste("processing OEM:", oem))
     
     oem_listings <- parse_resource_locator(oem_table$resource_location[oem_table$maker == oem]) %>% oem_urls()
@@ -175,7 +172,7 @@ loop_the_loop <- function() {
       
       for (device in devices_on_page$device_name) {
         
-        if (device %in% gsm$model && oem %in% gsm$oem){
+        if (device %in% gsm$model && oem %in% gsm$oem) {
           
           print("device exists. skipping...")
           
@@ -185,12 +182,12 @@ loop_the_loop <- function() {
           
           out = tryCatch(
             {
-              gsm_data <- safe_scraper(devices_on_page %>% 
+              gsm_data <- safe_scraper(devices_on_page %>%
                                          filter(device_name == device) %>%
                                          select(device_resource) %>% parse_resource_locator()
               )
               
-              if(!is.null(gsm_data$result)){
+              if (!is.null(gsm_data$result)) {
                 
                 gsm_data <- gsm_data$result
                 tmp_df <- data.frame(type = c("oem", "model"), sub_type = c("", ""), val = c(oem, device))
@@ -200,18 +197,13 @@ loop_the_loop <- function() {
                 ll$devices[[oem]][[device]] <<- gsm_data
                 
                 writeLines(toJSON(ll), "gsm.json")
-                
-                
               }
-              
             }
           )
         }
-        
       }
     }
   }
-  
 }
 
 
@@ -221,9 +213,9 @@ loop_the_loop()
 new_data_json <- readLines("gsm.json") %>% fromJSON()
 
 
-long_to_wide <- function(df){
-  as.data.frame(t(df$val)) %>% 
-    `colnames<-`(paste0(df$type, "_", df$sub_type) %>% 
+long_to_wide <- function(df) {
+  as.data.frame(t(df$val)) %>%
+    `colnames<-`(paste0(df$type, "_", df$sub_type) %>%
                    str_trim(side = "both"))
 }
 
@@ -233,13 +225,13 @@ gsm_new_devices <- new_data_json$devices %>% purrr::flatten() %>% map(long_to_wi
 
 # remove trailing underscores from col names, replace spaces with underscores, lowercase col names
 
-colnames(gsm_new_devices) <- colnames(gsm_new_devices) %>% str_replace( "_\\Z", "") %>% 
+colnames(gsm_new_devices) <- colnames(gsm_new_devices) %>% str_replace("_\\Z", "") %>%
   str_replace_all(" ", "_") %>%  str_trim() %>% tolower()
 
-colnames(gsm_new_devices) <- colnames(gsm_new_devices) %>% str_replace( "_na", "") %>% 
-  str_replace( "\\.\\.\\.[0-9]+", "")
+colnames(gsm_new_devices) <- colnames(gsm_new_devices) %>% str_replace("_na", "") %>%
+  str_replace("\\.\\.\\.[0-9]+", "")
 
 
 df <- bind_rows(gsm_new_devices, gsm)
 
-write.csv(df, "gsm.csv", na = "", row.names = F)
+write.csv(df, "gsm.csv", na = "", row.names = FALSE)
