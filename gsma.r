@@ -98,7 +98,7 @@ listed_devices <- function(page_url) {
 
 scrape_df <- function(url) {
   
-  src <- read_html(url)
+  # src <- read_html(url)
   doc <- xml2::download_xml(url)
   
   # number of [sub]tables on page
