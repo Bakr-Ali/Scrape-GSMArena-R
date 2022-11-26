@@ -98,11 +98,12 @@ listed_devices <- function(page_url) {
 
 scrape_df <- function(url) {
   
-  # src <- read_html(url)
+  src <- xml2::read_html(url)
+  Sys.sleep(3)
   doc <- xml2::download_xml(url)
   
   # number of [sub]tables on page
-  n_head <- xml2::read_html(url) %>% html_nodes("th") %>% length()
+  n_head <- src %>% html_nodes("th") %>% length()
   
   get_head_tbl <- function(head_indx) {
     

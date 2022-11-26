@@ -154,7 +154,8 @@ listed_devices <- function(page_url) {
 scrape_df <- function(url) {
   ## url <- "https://www.gsmarena.com/samsung_galaxy_a04e-11945.php" ###
   
-  # src <- read_html(url)
+  src <- xml2::read_html(url)
+  Sys.sleep(3)
   doc <- xml2::download_xml(url)
   # file "samsung_galaxy_a04e-11945.php" ???
   
@@ -162,13 +163,13 @@ scrape_df <- function(url) {
   # Both read functions convert the encoding to UTF-8 and they are almost identical.
   
   # number of [sub]tables on page
-  n_head <- xml2::read_html(url) %>% html_nodes("th") %>% length()
+  n_head <- src %>% html_nodes("th") %>% length()
   # 13(L??)
-  # TODO explore changing `xml2::read_html(url)` with `doc`
+  # TODO explore changing ~~`xml2::read_html(url)`~~ `src` with `doc`
   
   get_head_tbl <- function(head_indx) {
+    ## head_indx <- 3 ### 1:13L
     
-    ## head_indx <- 2 ### 1:13L
     out = tryCatch(
       {
         suppressMessages(htmltab(doc, which = head_indx, rm_nodata_cols = FALSE) %>%
@@ -181,6 +182,10 @@ scrape_df <- function(url) {
         xp <- '//th | //*[contains(concat( " ", @class, " " ), concat( " ", "ttl", " " ))]//*[contains(concat( " ", @class, " " ), concat( " ", "nfo", " " ))]'
         print(paste("Fetching chunk", head_indx, "of", n_head))
         
+        # TODO this is not working, getting the following error.
+          # Error in XML::htmlParse("", list(encoding = "UTF-8")) : empty or no content specified
+        # Try instead:
+          # replace `url` with `toString(src)`
         suppressMessages(htmltab(url, which = head_indx, body = xp) %>%
                            as.data.frame() %>%
                            rbind(colnames(.), .) %>%
