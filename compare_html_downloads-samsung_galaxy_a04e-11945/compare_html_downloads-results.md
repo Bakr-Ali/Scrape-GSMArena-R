@@ -3,19 +3,19 @@
 | read_html_xml2.html                                                                           | view_page_source-ms_edge.html                                                                   |
 | read_html_rvest.html                                                                          | download_xml_xml2-samsung_galaxy_a04e-11945.php.html                                            |
 |                                                                                               |                                                                                                 |
-| `charset=UTF-8">`                                                                               | `charset=iso-8859-1">`                                                                            |
+| `charset=UTF-8">`                                                                             | `charset=iso-8859-1">`                                                                          |
 |                                                                                               |                                                                                                 |
-| `id="div-gpt-ad-gsmarenacom35723"`                                                              | `id='div-gpt-ad-gsmarenacom35723'`                                                                |
+| `id="div-gpt-ad-gsmarenacom35723"`                                                            | `id='div-gpt-ad-gsmarenacom35723'`                                                              |
 |                                                                                               |                                                                                                 |
-| `tweet?text=Samsung+Galaxy+A04e&amp;url=`                                                       | `tweet?text=Samsung+Galaxy+A04e&url=`                                                             |
+| `tweet?text=Samsung+Galaxy+A04e&amp;url=`                                                     | `tweet?text=Samsung+Galaxy+A04e&url=`                                                           |
 |                                                                                               |                                                                                                 |
-| `href="samsung_galaxy_a04e-pictures-11945.php"`                                                 | `samsung_galaxy_a04e-pictures-11945.php`                                                          |
+| `href="samsung_galaxy_a04e-pictures-11945.php"`                                               | `samsung_galaxy_a04e-pictures-11945.php`                                                        |
 |                                                                                               |                                                                                                 |
 | `<br style="clear:both;">`                                                                    | `<br style="clear:both;" />`                                                                    |
 |                                                                                               |                                                                                                 |
-| `td class="nfo" data-spec="net2g">GSM 850 / 900 / 1800 / 1900 - SIM 1 &amp; SIM 2`              | `td class="nfo" data-spec="net2g">GSM 850 / 900 / 1800 / 1900 - SIM 1 & SIM 2`                    |
+| `td class="nfo" data-spec="net2g">GSM 850 / 900 / 1800 / 1900 - SIM 1 &amp; SIM 2`            | `td class="nfo" data-spec="net2g">GSM 850 / 900 / 1800 / 1900 - SIM 1 & SIM 2`                  |
 |                                                                                               |                                                                                                 |
-| `a href="#" onclick`                                                                            | `a href=# onclick`                                                                                |
+| `a href="#" onclick`                                                                          | `a href=# onclick`                                                                              |
 |                                                                                               |                                                                                                 |
 |                                                                                               | extra `</td> </tr>`                                                                             |
 |                                                                                               |                                                                                                 |
