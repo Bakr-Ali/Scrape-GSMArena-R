@@ -32,3 +32,5 @@
 | `© 2000-2022`                                                                                 | `&copy; 2000-2022`                                                                              |
 |                                                                                               |                                                                                                 |
 |                                                                                               |                                                                                                 |
+
+`writeLines(l_src, file_conn)` is almost the same as `read_html_xml2.html`
