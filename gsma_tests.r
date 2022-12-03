@@ -173,14 +173,30 @@ scrape_df <- function(url) {
     out = tryCatch(
       {
         suppressMessages(htmltab(doc, which = head_indx, rm_nodata_cols = FALSE) %>%
+                           #   Body Dimensions               164.2 x 75.9 x 9.1 mm (6.46 x 2.99 x 0.36 in)
+                           # 2 Body     Weight                                             188 g (6.63 oz)
+                           # 3 Body      Build                    Glass front, plastic back, plastic frame
+                           # 4 Body        SIM Single SIM (Nano-SIM) or Dual SIM (Nano-SIM, dual stand-by)
                            as.data.frame() %>%
+                           # same
                            rbind(colnames(.), .) %>%
+                           #   Body Dimensions               164.2 x 75.9 x 9.1 mm (6.46 x 2.99 x 0.36 in)
+                           # 1 Body Dimensions               164.2 x 75.9 x 9.1 mm (6.46 x 2.99 x 0.36 in)
+                           # 2 Body     Weight                                             188 g (6.63 oz)
+                           # 3 Body      Build                    Glass front, plastic back, plastic frame
+                           # 4 Body        SIM Single SIM (Nano-SIM) or Dual SIM (Nano-SIM, dual stand-by)
                            `colnames<-`(c("type", "sub_type", "val")))
+        #   type   sub_type                                                         val
+        # 1 Body Dimensions               164.2 x 75.9 x 9.1 mm (6.46 x 2.99 x 0.36 in)
+        # 2 Body     Weight                                             188 g (6.63 oz)
+        # 3 Body      Build                    Glass front, plastic back, plastic frame
+        # 4 Body        SIM Single SIM (Nano-SIM) or Dual SIM (Nano-SIM, dual stand-by)
       },
       
       error = function(e) {
         xp <- '//th | //*[contains(concat( " ", @class, " " ), concat( " ", "ttl", " " ))]//*[contains(concat( " ", @class, " " ), concat( " ", "nfo", " " ))]'
         print(paste("Fetching chunk", head_indx, "of", n_head))
+        # "Fetching chunk 3 of 13"
         
         # TODO this is not working, getting the following error.
           # Error in XML::htmlParse("", list(encoding = "UTF-8")) : empty or no content specified
@@ -198,8 +214,46 @@ scrape_df <- function(url) {
   }
   
   df <- map(1:n_head, get_head_tbl) %>% bind_rows()
+  #             type    sub_type                                                                   val
+  # 1        Network  Technology                                                      GSM / HSPA / LTE
+  # 2        Network    2G bands     GSM 850 / 900 / 1800 / 1900 - SIM 1 & SIM 2 (dual-SIM model only)
+  # 3        Network    3G bands                                                HSDPA 850 / 900 / 2100
+  # 4        Network    4G bands                                     1, 3, 5, 7, 8, 20, 28, 38, 40, 41
+  # 5        Network       Speed                                                             HSPA, LTE
+  # 6         Launch   Announced                                                      2022, October 21
+  # 7         Launch      Status                                 Available. Released 2022, November 07
+  # 8           Body  Dimensions                         164.2 x 75.9 x 9.1 mm (6.46 x 2.99 x 0.36 in)
+  # 9           Body      Weight                                                       188 g (6.63 oz)
+  # 10          Body       Build                              Glass front, plastic back, plastic frame
+  # 11          Body         SIM           Single SIM (Nano-SIM) or Dual SIM (Nano-SIM, dual stand-by)
+  # 12       Display        Type                                                               PLS LCD
+  # 13       Display        Size                    6.5 inches, 102.0 cm (~81.8% screen-to-body ratio)
+  # 14       Display  Resolution                      720 x 1600 pixels, 20:9 ratio (~270 ppi density)
+  # 15      Platform          OS                                           Android 12, One UI Core 4.1
+  # 16      Platform         CPU                                         Octa-core (2.3 GHz & 1.8 GHz)
+  # 17        Memory   Card slot                                            microSDXC (dedicated slot)
+  # 18        Memory    Internal 32GB 3GB RAM, 32GB 4GB RAM, 64GB 3GB RAM, 64GB 4GB RAM, 128GB 4GB RAM
+  # 19   Main Camera        Dual                        13 MP, f/2.2, (wide), AF  2 MP, f/2.4, (depth)
+  # 20   Main Camera    Features                                                             LED flash
+  # 21   Main Camera       Video                                                           1080p@30fps
+  # 22 Selfie camera      Single                                                           5 MP, f/2.2
+  # 23 Selfie camera       Video                                                                   Yes
+  # 24         Sound Loudspeaker                                                                   Yes
+  # 25         Sound  3.5mm jack                                                                   Yes
+  # 26         Comms        WLAN                                      Wi-Fi 802.11 b/g/n, Wi-Fi Direct
+  # 27         Comms   Bluetooth                                                         5.0, A2DP, LE
+  # 28         Comms Positioning                                            GPS, GLONASS, GALILEO, BDS
+  # 29         Comms         NFC                                                                    No
+  # 30         Comms       Radio                                                           Unspecified
+  # 31         Comms         USB                                         USB Type-C 2.0, USB On-The-Go
+  # 32      Features     Sensors                                              Accelerometer, proximity
+  # 33       Battery        Type                                         Li-Po 5000 mAh, non-removable
+  # 34          Misc      Colors                                             Black, Copper, Light Blue
+  # 35          Misc      Models                          SM-A042F, SM-A042F/DS, SM-A042M, SM-A042M/DS
+  # 36          Misc      SAR EU                             0.29 W/kg (head)     1.11 W/kg (body)    
+  # 37          Misc       Price                                                              £ 134.99
   
-  system("rm *.php")
+  system("rm *.php") # deletes the .php file
   df
 }
 
@@ -268,8 +322,8 @@ loop_the_loop <- function() {
         # device <- "Galaxy A04e"
         
         if (device %in% gsm$model && oem %in% gsm$oem) {
-          # TODO this is wrong, correct it by adding a "oem_and_model" column to 
-          # the gsm.csv data and checking with:
+          # TODO this is (probably?) wrong, correct it by adding a "oem_and_model" 
+          # column to the gsm.csv data and checking with:
           # if (paste(oem, device) %in% gsm$oem_and_model)
           
           print("device exists. skipping...")
@@ -291,11 +345,22 @@ loop_the_loop <- function() {
                 
                 gsm_data <- gsm_data$result
                 tmp_df <- data.frame(type = c("oem", "model"), sub_type = c("", ""), val = c(oem, device))
+                #    type sub_type         val
+                # 1   oem              Samsung
+                # 2 model          Galaxy A04e
+                
+                # TODO add other columns above
+                  # `oem - model`
+                  # `resource_locator`?
+                  # URL too?
                 
                 gsm_data <- rbind(tmp_df, gsm_data)
+                # joins them
                 
+                ## ll$devices[[oem]][[device]] <- gsm_data ###
                 ll$devices[[oem]][[device]] <<- gsm_data
                 
+                # TODO move this outside the loop because it overwrites the .json file with each loop
                 writeLines(toJSON(ll), "gsm.json")
               }
             }
