@@ -7,6 +7,7 @@
 # Sys.setenv(http_proxy = "socks5://localhost:8888")
 # Sys.setenv(HTTPS_PROXY = "socks5://localhost:8888")
 
+# test system sound
 if (.Platform$OS.type == "unix") {
   # system("spd-say 'get back to work'")
   system("tput bel")
@@ -14,6 +15,30 @@ if (.Platform$OS.type == "unix") {
   # system("cmd.exe", input = "echo `a")
   system("powershell -c (New-Object Media.SoundPlayer 'C:/Windows/Media/notify.wav').PlaySync();")
 }
+
+
+## VPN for Linux only ##
+# TODO don't run these functions if not Linux
+switch_vpn <- function(x = 10) {
+  
+  print("Switching VPN server..")
+  protonvpn_resp <- system("protonvpn-cli c -r")
+  if (!grepl("Successfully connected", protonvpn_resp[4], fixed = TRUE)) {
+    disconnect_vpn(5)
+    switch_vpn()
+  }
+  Sys.sleep(x)
+  print("VPN changed!")
+  
+}
+
+disconnect_vpn <- function(x = 1) {
+  print("Disconnecting VPN..")
+  system("protonvpn-cli d")
+  Sys.sleep(x)
+  print("VPN Disconnected!")
+}
+
 
 library(rvest)
 library(dplyr)
@@ -35,6 +60,7 @@ if (file.exists("gsm.csv")) {
 
 build_oem_table <- function(...) {
   
+  ###### VPN here? ######
   sesh <- session("https://www.gsmarena.com/makers.php3")
   makers <- read_html(sesh)
   
@@ -88,6 +114,8 @@ parse_resource_locator <- function(location) {
 
 oem_urls <- function(oem_base_url) {
   ##oem_base_url <- "https://www.gsmarena.com/samsung-phones-9.php" ###
+  
+  switch_vpn()
   src <- read_html(oem_base_url); Sys.sleep(3)
   
   items <- src %>% html_nodes(".nav-pages strong , .nav-pages a") %>% html_text()
@@ -126,6 +154,7 @@ oem_urls <- function(oem_base_url) {
 listed_devices <- function(page_url) {
   ## page_url <- "https://www.gsmarena.com/samsung-phones-f-9-0-p1.php" ###
   
+  switch_vpn()
   src <- read_html(page_url)
   nodes <- src %>% html_nodes("#review-body a")
   # <a href="samsung_galaxy_a04e-11945.php"><img src="https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-a04e.jpg" title="Samsung Galaxy A04e Android smartphone. Announced Oct 2022. Features 6.5″  display, 5000 mAh battery, 128 GB storage, 4 GB RAM."><strong><span>Galaxy A04e</span></strong></a>
@@ -154,8 +183,9 @@ listed_devices <- function(page_url) {
 scrape_df <- function(url) {
   ## url <- "https://www.gsmarena.com/samsung_galaxy_a04e-11945.php" ###
   
+  switch_vpn()
   src <- xml2::read_html(url)
-  Sys.sleep(3)
+  switch_vpn()
   doc <- xml2::download_xml(url)
   # file "samsung_galaxy_a04e-11945.php" ???
   
@@ -202,6 +232,7 @@ scrape_df <- function(url) {
           # Error in XML::htmlParse("", list(encoding = "UTF-8")) : empty or no content specified
         # Try instead:
           # replace `url` with `toString(src)`
+        switch_vpn()
         suppressMessages(htmltab(url, which = head_indx, body = xp) %>%
                            as.data.frame() %>%
                            rbind(colnames(.), .) %>%
@@ -393,6 +424,7 @@ gsm_new_devices <- new_data_json$devices %>% purrr::flatten() %>% map(long_to_wi
 colnames(gsm_new_devices) <- colnames(gsm_new_devices) %>% str_replace("_\\Z", "") %>%
   str_replace_all(" ", "_") %>%  str_trim() %>% tolower()
 
+# what is this for?
 colnames(gsm_new_devices) <- colnames(gsm_new_devices) %>% str_replace("_na", "") %>%
   str_replace("\\.\\.\\.[0-9]+", "")
 
