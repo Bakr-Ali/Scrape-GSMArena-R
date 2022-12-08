@@ -34,14 +34,30 @@ switch_vpn <- function(x = 10) {
     disconnect_vpn(5)
     switch_vpn()
   }
-  Sys.sleep(x)
   print("VPN changed!")
+  Sys.sleep(x)
 }
 disconnect_vpn <- function(x = 1) {
   print("Disconnecting VPN..")
-  system("protonvpn-cli d")
-  Sys.sleep(x)
+  protonvpn_resp <- system("protonvpn-cli d", intern = TRUE)
   print("VPN Disconnected!")
+  Sys.sleep(x)
+}
+
+safe_read_html <- function(url, x = 10) {
+  switch_vpn(x)
+  tryCatch(
+    {
+      print(paste("Getting html content of:", url))
+      xml2::read_html(url)
+    },
+    
+    error = function(e) {
+      print(paste("ERROR Retry getting html of:", url))
+      disconnect_vpn()
+      safe_read_html(url, 30)
+    }
+  )
 }
 
 
@@ -54,7 +70,7 @@ build_oem_table <- function(...) {
   
   # TODO: VPN here?
   sesh <- session("https://www.gsmarena.com/makers.php3")
-  makers <- read_html(sesh)
+  makers <- safe_read_html(sesh)
   
   maker_nodes <- makers %>% html_nodes(".st-text a")
   # <a href="acer-phones-59.php">Acer<br><span>100 devices</span></a>
@@ -107,8 +123,7 @@ parse_resource_locator <- function(location) {
 oem_urls <- function(oem_base_url) {
   ##oem_base_url <- "https://www.gsmarena.com/samsung-phones-9.php" ###
   
-  switch_vpn()
-  src <- read_html(oem_base_url)
+  src <- safe_read_html(oem_base_url)
   Sys.sleep(3)
   
   items <- src %>% html_nodes(".nav-pages strong , .nav-pages a") %>% html_text()
@@ -147,8 +162,7 @@ oem_urls <- function(oem_base_url) {
 listed_devices <- function(page_url) {
   ## page_url <- "https://www.gsmarena.com/samsung-phones-f-9-0-p1.php" ###
   
-  switch_vpn()
-  src <- read_html(page_url)
+  src <- safe_read_html(page_url)
   nodes <- src %>% html_nodes("#review-body a")
   # <a href="samsung_galaxy_a04e-11945.php"><img src="https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-a04e.jpg" title="Samsung Galaxy A04e Android smartphone. Announced Oct 2022. Features 6.5″  display, 5000 mAh battery, 128 GB storage, 4 GB RAM."><strong><span>Galaxy A04e</span></strong></a>
   
@@ -176,8 +190,7 @@ listed_devices <- function(page_url) {
 scrape_df <- function(url) {
   ## url <- "https://www.gsmarena.com/samsung_galaxy_a04e-11945.php" ###
   
-  switch_vpn()
-  src <- xml2::read_html(url)
+  src <- safe_read_html(url)
   switch_vpn()
   doc <- xml2::download_xml(url)
   # file "samsung_galaxy_a04e-11945.php" ???
@@ -188,7 +201,7 @@ scrape_df <- function(url) {
   # number of [sub]tables on page
   n_head <- src %>% html_nodes("th") %>% length()
   # 13(L??)
-  # TODO explore changing ~~`xml2::read_html(url)`~~ `src` with `doc`
+  # TODO explore changing ~~`safe_read_html(url)`~~ `src` with `doc`
   
   get_head_tbl <- function(head_indx) {
     ## head_indx <- 3 ### 1:13L
@@ -277,7 +290,7 @@ scrape_df <- function(url) {
   # 36          Misc      SAR EU                             0.29 W/kg (head)     1.11 W/kg (body)    
   # 37          Misc       Price                                                              £ 134.99
   
-  # deletes the .php file
+  # deletes the downloaded .php files
   system("rm *.php")
   df
 }

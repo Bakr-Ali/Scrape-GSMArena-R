@@ -24,14 +24,30 @@ switch_vpn <- function(x = 10) {
     disconnect_vpn(5)
     switch_vpn()
   }
-  Sys.sleep(x)
   print("VPN changed!")
+  Sys.sleep(x)
 }
 disconnect_vpn <- function(x = 1) {
   print("Disconnecting VPN..")
-  system("protonvpn-cli d")
-  Sys.sleep(x)
+  protonvpn_resp <- system("protonvpn-cli d", intern = TRUE)
   print("VPN Disconnected!")
+  Sys.sleep(x)
+}
+
+safe_read_html <- function(url, x = 10) {
+  switch_vpn(x)
+  tryCatch(
+    {
+      print(paste("Getting html content of:", url))
+      xml2::read_html(url)
+    },
+    
+    error = function(e) {
+      print(paste("ERROR Retry getting html of:", url))
+      disconnect_vpn()
+      safe_read_html(url, 30)
+    }
+  )
 }
 
 
@@ -44,7 +60,7 @@ build_oem_table <- function(...) {
   
   # TODO: VPN here?
   sesh <- session("https://www.gsmarena.com/makers.php3")
-  makers <- read_html(sesh)
+  makers <- safe_read_html(sesh)
   
   maker_nodes <- makers %>% html_nodes(".st-text a")
   
@@ -72,8 +88,7 @@ parse_resource_locator <- function(location) {
 
 
 oem_urls <- function(oem_base_url) {
-  switch_vpn()
-  src <- read_html(oem_base_url)
+  src <- safe_read_html(oem_base_url)
   Sys.sleep(3)
   
   items <- src %>% html_nodes(".nav-pages strong , .nav-pages a") %>% html_text()
@@ -101,8 +116,7 @@ oem_urls <- function(oem_base_url) {
 
 listed_devices <- function(page_url) {
   
-  switch_vpn()
-  src <- read_html(page_url)
+  src <- safe_read_html(page_url)
   nodes <- src %>% html_nodes("#review-body a")
   
   devices <- nodes %>% html_text()
@@ -116,14 +130,13 @@ listed_devices <- function(page_url) {
 
 scrape_df <- function(url) {
   
-  switch_vpn()
-  src <- xml2::read_html(url)
+  src <- safe_read_html(url)
   switch_vpn()
   doc <- xml2::download_xml(url)
   
   # number of [sub]tables on page
   n_head <- src %>% html_nodes("th") %>% length()
-  # TODO explore changing ~~`xml2::read_html(url)`~~ `src` with `doc`
+  # TODO explore changing ~~`safe_read_html(url)`~~ `src` with `doc`
   
   get_head_tbl <- function(head_indx) {
     
