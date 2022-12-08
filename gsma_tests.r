@@ -2,11 +2,6 @@
 ## scraping gsmarena website ##
 
 
-# proxy settings
-
-# Sys.setenv(http_proxy = "socks5://localhost:8888")
-# Sys.setenv(HTTPS_PROXY = "socks5://localhost:8888")
-
 # test system sound
 if (.Platform$OS.type == "unix") {
   # system("spd-say 'get back to work'")
@@ -17,29 +12,7 @@ if (.Platform$OS.type == "unix") {
 }
 
 
-## VPN for Linux only ##
-# TODO don't run these functions if not Linux
-switch_vpn <- function(x = 10) {
-  
-  print("Switching VPN server..")
-  protonvpn_resp <- system("protonvpn-cli c -r", intern = TRUE)
-  if (!grepl("Successfully connected", protonvpn_resp[4], fixed = TRUE)) {
-    disconnect_vpn(5)
-    switch_vpn()
-  }
-  Sys.sleep(x)
-  print("VPN changed!")
-  
-}
-
-disconnect_vpn <- function(x = 1) {
-  print("Disconnecting VPN..")
-  system("protonvpn-cli d")
-  Sys.sleep(x)
-  print("VPN Disconnected!")
-}
-
-
+# all of them from https://www.tidyverse.org/packages/ except "htmltab"
 library(rvest)
 library(dplyr)
 library(magrittr)
@@ -53,6 +26,25 @@ library(stringr)
 options(stringsAsFactors = FALSE)
 
 
+# TODO: don't run these vpn functions if not on Linux
+switch_vpn <- function(x = 10) {
+  print("Switching VPN server..")
+  protonvpn_resp <- system("protonvpn-cli c -r", intern = TRUE)
+  if (!grepl("Successfully connected", protonvpn_resp[4], fixed = TRUE)) {
+    disconnect_vpn(5)
+    switch_vpn()
+  }
+  Sys.sleep(x)
+  print("VPN changed!")
+}
+disconnect_vpn <- function(x = 1) {
+  print("Disconnecting VPN..")
+  system("protonvpn-cli d")
+  Sys.sleep(x)
+  print("VPN Disconnected!")
+}
+
+
 if (file.exists("gsm.csv")) {
   gsm <- read.csv("gsm.csv")
 }
@@ -60,7 +52,7 @@ if (file.exists("gsm.csv")) {
 
 build_oem_table <- function(...) {
   
-  ###### VPN here? ######
+  # TODO: VPN here?
   sesh <- session("https://www.gsmarena.com/makers.php3")
   makers <- read_html(sesh)
   
@@ -116,7 +108,8 @@ oem_urls <- function(oem_base_url) {
   ##oem_base_url <- "https://www.gsmarena.com/samsung-phones-9.php" ###
   
   switch_vpn()
-  src <- read_html(oem_base_url); Sys.sleep(3)
+  src <- read_html(oem_base_url)
+  Sys.sleep(3)
   
   items <- src %>% html_nodes(".nav-pages strong , .nav-pages a") %>% html_text()
   # chr [1:16]
@@ -284,7 +277,8 @@ scrape_df <- function(url) {
   # 36          Misc      SAR EU                             0.29 W/kg (head)     1.11 W/kg (body)    
   # 37          Misc       Price                                                              £ 134.99
   
-  system("rm *.php") # deletes the .php file
+  # deletes the .php file
+  system("rm *.php")
   df
 }
 

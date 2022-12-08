@@ -1,27 +1,7 @@
 
-## VPN for Linux only ##
-# TODO don't run these functions if not Linux
-switch_vpn <- function(x = 10) {
-  
-  print("Switching VPN server..")
-  protonvpn_resp <- system("protonvpn-cli c -r", intern = TRUE)
-  if (!grepl("Successfully connected", protonvpn_resp[4], fixed = TRUE)) {
-    disconnect_vpn(5)
-    switch_vpn()
-  }
-  Sys.sleep(x)
-  print("VPN changed!")
-  
-}
+## get list of oems' devices count only
 
-disconnect_vpn <- function(x = 1) {
-  print("Disconnecting VPN..")
-  system("protonvpn-cli d")
-  Sys.sleep(x)
-  print("VPN Disconnected!")
-}
-
-
+# all of them from https://www.tidyverse.org/packages/ except "htmltab"
 library(rvest)
 library(dplyr)
 library(magrittr)
@@ -30,7 +10,28 @@ library(purrr)
 library(jsonlite)
 library(stringr)
 
+# setwd("git/scrape-gsma/")
+
 options(stringsAsFactors = FALSE)
+
+
+# TODO: don't run these vpn functions if not on Linux
+switch_vpn <- function(x = 10) {
+  print("Switching VPN server..")
+  protonvpn_resp <- system("protonvpn-cli c -r", intern = TRUE)
+  if (!grepl("Successfully connected", protonvpn_resp[4], fixed = TRUE)) {
+    disconnect_vpn(5)
+    switch_vpn()
+  }
+  Sys.sleep(x)
+  print("VPN changed!")
+}
+disconnect_vpn <- function(x = 1) {
+  print("Disconnecting VPN..")
+  system("protonvpn-cli d")
+  Sys.sleep(x)
+  print("VPN Disconnected!")
+}
 
 
 if (file.exists("gsm.csv")) {
@@ -40,7 +41,7 @@ if (file.exists("gsm.csv")) {
 
 build_oem_table <- function(...) {
   
-  ###### VPN here? ######
+  # TODO: VPN here?
   sesh <- session("https://www.gsmarena.com/makers.php3")
   makers <- read_html(sesh)
   
@@ -80,11 +81,9 @@ build_oem_table <- function(...) {
   
   return(oem_table)
 
-
+  # gets the page count of each oem
   for (oem in oem_table$maker[1:nrow(oem_table)]) {
     oem_pages_count <- parse_resource_locator(oem_table$resource_location[oem_table$maker == oem]) %>% oem_urls_count()
-    
-    
   }
 }
 
@@ -102,7 +101,8 @@ parse_resource_locator <- function(location) {
 oem_urls_count_s <- function(oem_base_url) {
   ##oem_base_url <- "https://www.gsmarena.com/samsung-phones-9.php" ###
   switch_vpn()
-  src <- read_html(oem_base_url); Sys.sleep(3)
+  src <- read_html(oem_base_url)
+  Sys.sleep(3)
   
   items <- src %>% html_nodes(".nav-pages strong , .nav-pages a") %>% html_text()
   # chr [1:16]
@@ -291,7 +291,8 @@ scrape_df <- function(url) {
   # 36          Misc      SAR EU                             0.29 W/kg (head)     1.11 W/kg (body)    
   # 37          Misc       Price                                                              £ 134.99
   
-  system("rm *.php") # deletes the .php file
+  # deletes the .php file
+  system("rm *.php")
   df
 }
 
