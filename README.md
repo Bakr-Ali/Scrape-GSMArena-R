@@ -21,3 +21,4 @@ The dataset was scraped using rvest, htmltab, and xml2 libraries in the R progra
     - [ ] ~~Count oem devices in gsm.csv, compare it with number of devices in oems page~~
     - not reliable: xolo listed as 81, contains only 80. Some oems have 40 device/page, others 85 devicec/page.
 - [ ] Reduce repeated code by refrencing functions from the OG file [Define all functions in one .R file, call them from another .R file. How, if possible?](https://stackoverflow.com/questions/13548266/define-all-functions-in-one-r-file-call-them-from-another-r-file-how-if-pos)
+    - [x] Prevent main code from running when `source`d [source a file in r without running the code](https://stackoverflow.com/a/47178017) (source a file in r without running the code - Google Search)

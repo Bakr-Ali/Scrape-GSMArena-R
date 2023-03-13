@@ -15,6 +15,15 @@ library(stringr)
 options(stringsAsFactors = FALSE)
 
 
+
+options(echo = TRUE)
+print(sys.nframe())
+
+# prevent running main code when sourced
+if (sys.nframe() == 0) {
+  print("main lines running (when script run in interactive mode)")
+
+
 # TODO: don't run these vpn functions if not on Linux
 switch_vpn <- function(x = 10) {
   print("Switching VPN server..")
@@ -470,3 +479,6 @@ colnames(gsm_new_devices) <- colnames(gsm_new_devices) %>% str_replace("_na", ""
 df <- bind_rows(gsm_new_devices, gsm)
 
 write.csv(df, "gsm.csv", na = "", row.names = FALSE)
+
+
+}
