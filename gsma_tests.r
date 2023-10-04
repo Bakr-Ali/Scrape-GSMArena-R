@@ -137,6 +137,8 @@ build_oem_table <- function(...) {
   
   oem_table <- oem_table %>% mutate(maker_indx = stringr::str_match(oem_table$maker_url, ".*-phones-(.*?).php")[,2])
   
+  write.csv(oem_table, file = "./Data/oem_table.csv")
+  
   return(oem_table)
 }
 
