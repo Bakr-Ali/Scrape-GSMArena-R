@@ -120,15 +120,22 @@ build_oem_table <- function(...) {
   # 100
   # 407
   
-  maker_url = maker_nodes %>% html_attr("href")
+  maker_resource_location = maker_nodes %>% html_attr("href")
   # chr [1:119]
   # "acer-phones-59.php"
   # "alcatel-phones-5.php"
   
-  oem_table <- data.frame(maker = oem_names, device_count = maker_devices_count, resource_location = maker_url)
+  oem_table <- data.frame(maker = oem_names, device_count = maker_devices_count, resource_location = maker_resource_location)
   #               maker device_count             resource_location
   # 1              Acer          100            acer-phones-59.php
   # 2           alcatel          407          alcatel-phones-5.php
+  
+  # https://stackoverflow.com/questions/60791284/why-does-stringrstr-match-on-a-column-return-a-matrix
+  oem_table <- oem_table %>% mutate(maker_url = paste0("https://www.gsmarena.com/", oem_table$resource_location))
+  
+  oem_table <- oem_table %>% mutate(maker_id = stringr::str_match(oem_table$maker_url, "https://www.gsmarena.com/(.*?)-phones-")[,2])
+  
+  oem_table <- oem_table %>% mutate(maker_indx = stringr::str_match(oem_table$maker_url, ".*-phones-(.*?).php")[,2])
   
   return(oem_table)
 }
