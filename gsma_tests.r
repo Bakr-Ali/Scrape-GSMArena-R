@@ -89,6 +89,10 @@ if (file.exists("gsm.csv")) {
   gsm <- read.csv("gsm.csv")
 }
 
+if (file.exists("./Data/oem_table.csv")) {
+  old_oem_table <- read.csv("./Data/oem_table.csv")
+}
+
 
 build_oem_table <- function(...) {
   
@@ -137,6 +141,28 @@ build_oem_table <- function(...) {
   
   oem_table <- oem_table %>% mutate(maker_indx = stringr::str_match(oem_table$maker_url, ".*-phones-(.*?).php")[,2])
   
+  # oem_table <- oem_table %>% mutate(new_devices_count = oem_table$device_count - old_oem_table$device_count)
+  
+  # oem_table <- oem_table %>% mutate(new_devices_count = oem_table$device_count[oem_table$resource_location] - old_oem_table$device_count[old_oem_table$resource_location])
+  
+  # subtract new device count from old one to find number of devices added since last scrape
+  for (i in seq_len(nrow(oem_table))) {
+    tryCatch(
+      {
+        # This could error out (when there are new oems), that's why we use trycatch
+        oem_table$number_of_new[i] <- oem_table$device_count[i] - old_oem_table$device_count[which(old_oem_table$resource_location == oem_table$resource_location[i])]
+      },
+      
+      error = function(e) {
+        if (grepl("replacement has length zero", as.character(e), fixed = TRUE)) {
+          oem_table$number_of_new[i] <- oem_table$device_count[i] - 0
+        } else {
+          e
+        }
+      }
+    )
+  }
+  
   write.csv(oem_table, file = "./Data/oem_table.csv")
   
   return(oem_table)
@@ -170,6 +196,7 @@ oem_urls <- function(oem_base_url) {
     # 1
     # 2
     
+    # TODO Remove these from here and source them from build_oem_table file/function
     maker_id <- stringr::str_match(oem_base_url, "https://www.gsmarena.com/(.*?)-phones-")[2]
     # "samsung"
     maker_indx <- stringr::str_match(oem_base_url, ".*-phones-(.*?).php")[2]
