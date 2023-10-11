@@ -163,6 +163,8 @@ build_oem_table <- function(...) {
     )
   }
   
+  file.copy("./Data/oem_table.csv", "./Data/old_oem_table.csv", overwrite = TRUE)
+  
   write.csv(oem_table, file = "./Data/oem_table.csv")
   
   return(oem_table)
