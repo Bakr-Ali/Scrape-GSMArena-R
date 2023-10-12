@@ -3,12 +3,18 @@
 
 
 # test system sound
-if (.Platform$OS.type == "unix") {
-  # system("spd-say 'get back to work'")
-  system("tput bel")
-} else {
-  # system("cmd.exe", input = "echo `a")
-  system("powershell -c (New-Object Media.SoundPlayer 'C:/Windows/Media/notify.wav').PlaySync();")
+alert_sound <- function(x = 3, n = 1) {
+  for (i in seq_len(n)) {
+    if (.Platform$OS.type == "unix") {
+      # system("spd-say 'get back to work'")
+      system("tput bel")
+      system("paplay /usr/share/sounds/gnome/default/alerts/sonar.ogg") # https://stackoverflow.com/a/3366068
+    } else {
+      # system("cmd.exe", input = "echo `a")
+      system("powershell -c (New-Object Media.SoundPlayer 'C:/Windows/Media/notify.wav').PlaySync();")
+    }
+    Sys.sleep(x)
+  }
 }
 
 
