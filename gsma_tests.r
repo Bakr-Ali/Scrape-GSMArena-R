@@ -152,30 +152,16 @@ build_oem_table <- function(...) {
   
   # subtract new device count from old one to find number of devices added since last scrape
   for (i in seq_len(nrow(oem_table))) {
-    oem_table$number_of_new[i] <- tryCatch(
-      {
-        # This could error out (when there are new oems), that's why we use trycatch
-        oem_table$device_count[i] - old_oem_table$device_count[which(old_oem_table$resource_location == oem_table$resource_location[i])]
-      },
-      
-      error = function(e) {
-        if (grepl("replacement has length zero", as.character(e), fixed = TRUE)) {
-          return(oem_table$device_count[i] - 0)
-        } else {
-          print(e)
-          return(NA)
-        }
-      }
-    )
     
-    # https://stackoverflow.com/questions/38482937/variable-scope-in-r-trycatch-block-is-necessary-to-change-local-variable-de
-    normal_do <- function(a, b) {
-      return(oem_table$device_count[i] - old_oem_table$device_count[which(old_oem_table$resource_location == oem_table$resource_location[i])])
+    old_device_count <- old_oem_table$device_count[which(old_oem_table$resource_location == oem_table$resource_location[i])]
+    
+    # https://stackoverflow.com/questions/10664662/how-to-test-when-condition-returns-numeric0-in-r
+    if (identical(old_device_count, integer(0))) {
+      old_device_count <- 0
     }
-    exceptional_do <- function(err) {
-      return(oem_table$number_of_new[i] <- oem_table$device_count[i] - 0)
-    }
-    results <- tryCatch(normal_do(a, b), error = exceptional_do)
+    
+    oem_table$number_of_new[i] <- oem_table$device_count[i] - old_device_count
+    
   }
   
   file.copy("./Data/oem_table.csv", "./Data/old_oem_table.csv", overwrite = TRUE)
