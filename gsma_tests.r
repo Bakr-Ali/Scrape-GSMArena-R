@@ -167,6 +167,15 @@ build_oem_table <- function(...) {
         }
       }
     )
+    
+    # https://stackoverflow.com/questions/38482937/variable-scope-in-r-trycatch-block-is-necessary-to-change-local-variable-de
+    normal_do <- function(a, b) {
+      return(oem_table$device_count[i] - old_oem_table$device_count[which(old_oem_table$resource_location == oem_table$resource_location[i])])
+    }
+    exceptional_do <- function(err) {
+      return(oem_table$number_of_new[i] <- oem_table$device_count[i] - 0)
+    }
+    results <- tryCatch(normal_do(a, b), error = exceptional_do)
   }
   
   file.copy("./Data/oem_table.csv", "./Data/old_oem_table.csv", overwrite = TRUE)
