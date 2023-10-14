@@ -106,6 +106,8 @@ build_oem_table <- function(...) {
   sesh <- session("https://www.gsmarena.com/makers.php3")
   makers <- safe_read_html(sesh)
   
+  current_datetime <- Sys.time()
+  
   maker_nodes <- makers %>% html_nodes(".st-text a")
   # <a href="acer-phones-59.php">Acer<br><span>100 devices</span></a>
   # <a href="alcatel-phones-5.php">alcatel<br><span>407 devices</span></a>
@@ -163,6 +165,8 @@ build_oem_table <- function(...) {
     oem_table$number_of_new[i] <- oem_table$device_count[i] - old_device_count
     
   }
+  
+  oem_table$scrape_date_time <- current_datetime
   
   file.copy("./Data/oem_table.csv", "./Data/old_oem_table.csv", overwrite = TRUE)
   
