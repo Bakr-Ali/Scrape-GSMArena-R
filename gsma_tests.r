@@ -95,10 +95,6 @@ if (file.exists("gsm.csv")) {
   gsm <- read.csv("gsm.csv")
 }
 
-if (file.exists("./Data/oem_table.csv")) {
-  old_oem_table <- read.csv("./Data/oem_table.csv")
-}
-
 
 build_oem_table <- function(...) {
   
@@ -107,6 +103,10 @@ build_oem_table <- function(...) {
   makers <- safe_read_html(sesh)
   
   current_datetime <- Sys.time()
+  
+  if (file.exists("./Data/oem_table.csv")) {
+    old_oem_table <- read.csv("./Data/oem_table.csv")
+  }
   
   maker_nodes <- makers %>% html_nodes(".st-text a")
   # <a href="acer-phones-59.php">Acer<br><span>100 devices</span></a>
