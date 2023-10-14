@@ -3,7 +3,7 @@
 
 
 # test system sound
-alert_sound <- function(x = 3, n = 1) {
+alert_sound <- function(x = 1, n = 1) {
   for (i in seq_len(n)) {
     if (.Platform$OS.type == "unix") {
       # system("spd-say 'get back to work'")
@@ -35,10 +35,10 @@ options(stringsAsFactors = FALSE)
 # don't run these vpn functions if not on Linux
 switch_vpn <- function(x = 10) {
   if (.Platform$OS.type == "unix") {
+    disconnect_vpn()
     print("Switching VPN server..")
     protonvpn_resp <- system("protonvpn-cli c -r", intern = TRUE)
     if (!grepl("Successfully connected", protonvpn_resp[4], fixed = TRUE)) {
-      disconnect_vpn(5)
       switch_vpn()
     }
     print("VPN changed!")
