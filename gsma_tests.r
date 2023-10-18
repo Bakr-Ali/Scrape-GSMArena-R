@@ -58,20 +58,25 @@ disconnect_vpn <- function(x = 1) {
   }
 }
 
-safe_read_html <- function(url, x = 10) {
+safe_read_html <- function(url, save_folder = NULL, x = 10) {
   switch_vpn(x)
   tryCatch(
     {
       print(paste("Getting html content of:", url))
-      xml2::read_html(url)
+      html_content <- xml2::read_html(url)
     },
     
     error = function(e) {
       print(paste("ERROR Retry getting html of:", url))
       disconnect_vpn()
-      safe_read_html(url, 30)
+      safe_read_html(url, x = 30)
     }
   )
+  if (!is.null(save_folder)) {
+    file_name <- paste0(save_folder, "/", basename(url), ".html")
+    xml2::write_xml(html_content, file = file_name)
+  }
+  return(html_content)
 }
 
 safe_download_xml <- function(url, x = 10) {
@@ -85,7 +90,7 @@ safe_download_xml <- function(url, x = 10) {
     error = function(e) {
       print(paste("ERROR Retry downloading xml of:", url))
       disconnect_vpn()
-      safe_download_xml(url, 30)
+      safe_download_xml(url, x = 30)
     }
   )
 }
