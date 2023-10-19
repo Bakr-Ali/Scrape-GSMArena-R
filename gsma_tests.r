@@ -234,6 +234,59 @@ oem_urls <- function(oem_base_url) {
 # oem_urls("https://www.gsmarena.com/samsung-phones-9.php")
 
 
+oem_urls_download <- function() {
+  
+  if (file.exists("./Data/oem_table.csv")) {
+    oem_table <- read.csv("./Data/oem_table.csv")
+  }
+  
+  current_datetime <- Sys.time()
+  
+  for (oem_base_url in oem_table$maker_url[seq_len(nrow(oem_table))]) {
+  
+    # TODO Remove these from here and source them from build_oem_table file/function
+    maker_id <- stringr::str_match(oem_base_url, "https://www.gsmarena.com/(.*?)-phones-")[2]
+    # "samsung"
+    maker_indx <- stringr::str_match(oem_base_url, ".*-phones-(.*?).php")[2]
+    # "9"
+    
+    oem_first_url <- paste0("https://www.gsmarena.com/", maker_id, "-phones-f-", maker_indx, "-0-p", 1, ".php")
+    # "https://www.gsmarena.com/samsung-phones-f-9-0-p1.php"
+    
+    src <- safe_read_html(oem_first_url, "Data/oem_pages")
+    Sys.sleep(3)
+    
+    items <- src %>% html_nodes(".nav-pages strong , .nav-pages a") %>% html_text()
+    # chr [1:16]
+    # "1"
+    # "2"
+    
+    if (length(items) != 0) {
+      page_range <- 1:(items[length(items)] %>% as.numeric())
+      # int [1:16]
+      # 1
+      # 2
+      
+      all_oem_urls <- map_chr(page_range, 
+              function(pg_count) {
+                paste0("https://www.gsmarena.com/", maker_id, "-phones-f-",
+                      maker_indx, "-0-p", pg_count, ".php"
+                )
+              }
+      )
+      # "https://www.gsmarena.com/samsung-phones-f-9-0-p1.php"
+      # "https://www.gsmarena.com/samsung-phones-f-9-0-p2.php"
+    } else {
+      all_oem_urls <- oem_first_url
+    }
+    for (i in all_oem_urls) {
+      if (!endsWith(i, "-0-p1.php")) {
+        safe_read_html(oem_first_url, "Data/oem_pages")
+      }
+    }
+  }
+}
+
 listed_devices <- function(page_url) {
   ## page_url <- "https://www.gsmarena.com/samsung-phones-f-9-0-p1.php" ###
   
