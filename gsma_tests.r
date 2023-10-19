@@ -104,8 +104,8 @@ if (file.exists("gsm.csv")) {
 build_oem_table <- function(...) {
   
   # TODO: VPN here?
-  sesh <- session("https://www.gsmarena.com/makers.php3")
-  makers <- safe_read_html(sesh)
+  # sesh <- session("https://www.gsmarena.com/makers.php3")
+  makers <- safe_read_html("https://www.gsmarena.com/makers.php3")
   
   current_datetime <- Sys.time()
   
@@ -194,7 +194,16 @@ parse_resource_locator <- function(location) {
 oem_urls <- function(oem_base_url) {
   ##oem_base_url <- "https://www.gsmarena.com/samsung-phones-9.php" ###
   
-  src <- safe_read_html(oem_base_url)
+  # TODO Remove these from here and source them from build_oem_table file/function
+  maker_id <- stringr::str_match(oem_base_url, "https://www.gsmarena.com/(.*?)-phones-")[2]
+  # "samsung"
+  maker_indx <- stringr::str_match(oem_base_url, ".*-phones-(.*?).php")[2]
+  # "9"
+  
+  oem_first_url <- paste0("https://www.gsmarena.com/", maker_id, "-phones-f-", maker_indx, "-0-p", 1, ".php")
+  # "https://www.gsmarena.com/samsung-phones-f-9-0-p1.php"
+  
+  src <- safe_read_html(oem_first_url)
   Sys.sleep(3)
   
   items <- src %>% html_nodes(".nav-pages strong , .nav-pages a") %>% html_text()
@@ -208,12 +217,6 @@ oem_urls <- function(oem_base_url) {
     # 1
     # 2
     
-    # TODO Remove these from here and source them from build_oem_table file/function
-    maker_id <- stringr::str_match(oem_base_url, "https://www.gsmarena.com/(.*?)-phones-")[2]
-    # "samsung"
-    maker_indx <- stringr::str_match(oem_base_url, ".*-phones-(.*?).php")[2]
-    # "9"
-    
     map_chr(page_range, 
             function(pg_count) {
               paste0("https://www.gsmarena.com/", maker_id, "-phones-f-",
@@ -224,7 +227,7 @@ oem_urls <- function(oem_base_url) {
     # "https://www.gsmarena.com/samsung-phones-f-9-0-p1.php"
     # "https://www.gsmarena.com/samsung-phones-f-9-0-p2.php"
   } else {
-    oem_base_url
+    oem_first_url
   }
 }
 
