@@ -290,6 +290,18 @@ oem_urls_download <- function() {
       }
     }
   }
+  
+  maker_list <- list()
+  device_count_list <- list()
+  maker_url_list <- list()
+  maker_id_list <- list()
+  maker_indx_list <- list()
+  page_url_list <- list()
+  page_no_list <- list()
+  page_url_file_path_list <- list()
+  oem_pages_no_list <- list()
+  devices_no_in_page_list <- list()
+  
   # create a table for the oem urls
   for (page_url_file in list.files("Data/oem_pages")) {
     page_url <- tools::file_path_sans_ext(page_url_file)
@@ -339,6 +351,30 @@ oem_urls_download <- function() {
     
     # "number_of_new","scrape_date_time"
     
+    maker_list <- append(maker_list, maker)
+    device_count_list <- append(device_count_list, device_count)
+    maker_url_list <- append(maker_url_list, maker_url)
+    maker_id_list <- append(maker_id_list, maker_id)
+    maker_indx_list <- append(maker_indx_list, maker_indx)
+    page_url_list <- append(page_url_list, page_url)
+    page_no_list <- append(page_no_list, page_no)
+    page_url_file_path_list <- append(page_url_file_path_list, page_url_file_path)
+    oem_pages_no_list <- append(oem_pages_no_list, oem_pages_no)
+    devices_no_in_page_list <- append(devices_no_in_page_list, devices_no_in_page)
+  }
+  oem_urls_table <- data.frame(
+    maker = maker_list,
+    device_count = device_count_list,
+    maker_url = maker_url_list,
+    maker_id = maker_id_list,
+    maker_indx = maker_indx_list,
+    page_url = page_url_list,
+    page_no = page_no_list,
+    page_url_file_path = page_url_file_path_list,
+    oem_pages_no = oem_pages_no_list,
+    devices_no_in_page = devices_no_in_page_list,
+    scrape_date_time = current_datetime
+  )
 }
 
 listed_devices <- function(page_url) {
