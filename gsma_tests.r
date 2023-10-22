@@ -290,6 +290,55 @@ oem_urls_download <- function() {
       }
     }
   }
+  # create a table for the oem urls
+  for (page_url_file in list.files("Data/oem_pages")) {
+    page_url <- tools::file_path_sans_ext(page_url_file)
+    # "samsung-phones-f-9-0-p1.php"
+    
+    maker_id <- stringr::str_match(page_url, "(.*?)-phones-")[2]
+    # "samsung"
+    maker_indx <- stringr::str_match(page_url, ".*-phones-f-(.*?)-0-p")[2]
+    # "9"
+    page_no <- stringr::str_match(page_url, ".*-0-p(.*?).php")[2]
+    # "1"
+    maker_url <- paste0("https://www.gsmarena.com/", maker_id, "-phones-", maker_indx, ".php")
+    # "https://www.gsmarena.com/samsung-phones-9.php"
+    device_count <- oem_table$device_count[which(oem_table$maker_url == maker_url)]
+    # 1372
+    maker <- oem_table$maker[which(oem_table$maker_url == maker_url)]
+    # "Samsung"
+    page_url_file_path <- paste0("Data/oem_pages/", page_url_file)
+    # "Data/oem_pages/samsung-phones-f-9-0-p1.php.html"
+    
+    src <- xml2::read_html(page_url_file_path)
+    
+    oem_items <- src %>% html_nodes(".nav-pages strong , .nav-pages a") %>% html_text()
+    # chr [1:16]
+    # "1"
+    # "2"
+    
+    if (length(oem_items) != 0) {
+      oem_pages_no <- length(oem_items)
+    } else {
+      oem_pages_no <- 1
+    }
+    
+    nodes <- src %>% html_nodes("#review-body a")
+    # <a href="samsung_galaxy_a04e-11945.php"><img src="https://fdn2.gsmarena.com/vv/bigpic/samsung-galaxy-a04e.jpg" title="Samsung Galaxy A04e Android smartphone. Announced Oct 2022. Features 6.5″  display, 5000 mAh battery, 128 GB storage, 4 GB RAM."><strong><span>Galaxy A04e</span></strong></a>
+    
+    devices <- nodes %>% html_text()
+    # chr [1:85]
+    # "Galaxy A04e"
+    # "Galaxy Tab Active4 Pro"
+    # "Galaxy A04s"
+    
+    devices_no_in_page <- length(devices)
+    
+    # maker, device_count, "resource_location", maker_url, maker_id, maker_indx, 
+    #    page_url, page_no, page_url_file_path, oem_pages_no, devices_no_in_page, 
+    
+    # "number_of_new","scrape_date_time"
+    
 }
 
 listed_devices <- function(page_url) {
