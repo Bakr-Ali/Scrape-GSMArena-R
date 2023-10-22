@@ -153,6 +153,8 @@ build_oem_table <- function(...) {
   oem_table <- oem_table %>% mutate(maker_id = stringr::str_match(oem_table$maker_url, "https://www.gsmarena.com/(.*?)-phones-")[,2])
   
   oem_table <- oem_table %>% mutate(maker_indx = stringr::str_match(oem_table$maker_url, ".*-phones-(.*?).php")[,2])
+
+  oem_table <- oem_table %>% mutate(oem_first_url = paste0("https://www.gsmarena.com/", oem_table$maker_id, "-phones-f-", oem_table$maker_indx, "-0-p", 1, ".php"))
   
   # fixes auto-populating the "number_of_new" column with the result of first one
   oem_table$number_of_new <- NA
@@ -173,6 +175,7 @@ build_oem_table <- function(...) {
   
   oem_table$scrape_date_time <- current_datetime
   
+  # TODO move the old file to an archive folder for future comparison
   file.copy("./Data/oem_table.csv", "./Data/old_oem_table.csv", overwrite = TRUE)
   
   write.csv(oem_table, file = "./Data/oem_table.csv")
@@ -243,7 +246,8 @@ oem_urls_download <- function() {
   current_datetime <- Sys.time()
   
   for (oem_base_url in oem_table$maker_url[seq_len(nrow(oem_table))]) {
-  
+    ##oem_base_url <- "https://www.gsmarena.com/samsung-phones-9.php" ###
+    
     # TODO Remove these from here and source them from build_oem_table file/function
     maker_id <- stringr::str_match(oem_base_url, "https://www.gsmarena.com/(.*?)-phones-")[2]
     # "samsung"
@@ -279,9 +283,10 @@ oem_urls_download <- function() {
     } else {
       all_oem_urls <- oem_first_url
     }
+    
     for (i in all_oem_urls) {
       if (!endsWith(i, "-0-p1.php")) {
-        safe_read_html(oem_first_url, "Data/oem_pages")
+        safe_read_html(i, "Data/oem_pages")
       }
     }
   }
