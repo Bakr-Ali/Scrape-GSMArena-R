@@ -362,7 +362,9 @@ oem_urls_download <- function() {
     oem_pages_no_list <- append(oem_pages_no_list, oem_pages_no)
     devices_no_in_page_list <- append(devices_no_in_page_list, devices_no_in_page)
   }
-  oem_urls_table <- data.frame(
+  # https://stackoverflow.com/questions/28630024/combine-two-lists-in-a-dataframe-in-r
+  oem_urls_table <- do.call(rbind, Map(
+    data.frame,
     maker = maker_list,
     device_count = device_count_list,
     maker_url = maker_url_list,
@@ -374,7 +376,7 @@ oem_urls_download <- function() {
     oem_pages_no = oem_pages_no_list,
     devices_no_in_page = devices_no_in_page_list,
     scrape_date_time = current_datetime
-  )
+  ))
 }
 
 listed_devices <- function(page_url) {
